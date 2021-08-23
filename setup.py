@@ -38,6 +38,7 @@ setup(
                     'cryptography>=3.2.1',
                     'apscheduler>=3.5.2',
                     'bytebuffer>=0.1.0',
+                    'pyopenssl>=16.2.0',
                     'futures; python_version == "2.7"'
                     ],
     include_package_data=True,

@@ -54,7 +54,10 @@ class DefaultRefreshSecretStrategy(RefreshSecretStrategy):
         """根据凭据信息解析轮转时间间隔"""
         if self.__json_ttl_property_name is None:
             return -1
-        secret_value_dict = json.loads(secret_info.secret_value)
+        try:
+            secret_value_dict = json.loads(secret_info.secret_value)
+        except Exception:
+            return -1
         if secret_value_dict.get(self.__json_ttl_property_name) is None:
             return -1
         return secret_value_dict.get(self.__json_ttl_property_name)
