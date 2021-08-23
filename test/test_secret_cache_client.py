@@ -17,7 +17,7 @@ class TestCacheClient(unittest.TestCase):
     sk = os.environ["TEST_PYTHON_CLIENT_SK"]
 
     def test_cache_client_info_with_env(self):
-        secret_name = "cache_client_2"
+        secret_name = "cache_client_3"
         secret_cache_client = SecretManagerCacheClientBuilder.new_client()
         secret_info = secret_cache_client.get_secret_info(secret_name)
         print(secret_info)

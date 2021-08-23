@@ -41,3 +41,9 @@ ENV_REGION_REGION_ID_NAME_KEY = "regionId"
 ENV_REGION_ENDPOINT_NAME_KEY = "endpoint"
 # 环境变量 region中 vpc key
 ENV_REGION_VPC_NAME_KEY = "vpc"
+# 环境变量client_key_password key
+ENV_CLIENT_KEY_PASSWORD_NAME_KEY = "client_key_password"
+# 环境变量credentials_client_key_private_key_path key
+EnvClientKeyPrivateKeyPathNameKey = "client_key_private_key_path"
+# 环境变量 client_key_password_from_env_variable key
+ENV_CLIENT_KEY_PASSWORD_FROM_ENV_VARIABLE_NAME = "client_key_password_from_env_variable"
