@@ -23,6 +23,8 @@ import json
 import threading
 import time
 
+from aliyunsdkcore.request import RpcRequest
+
 from alibaba_cloud_secretsmanager_client.model.secret_info import convert_json_to_secret_info
 from alibaba_cloud_secretsmanager_client.utils import const, err_code_const
 from alibaba_cloud_secretsmanager_client.utils.backoff_utils import judge_need_back_off, judge_need_recovery_exception
@@ -111,10 +113,12 @@ class SecretManagerCacheClient:
         return self.__refresh_now(secret_name)
 
     def __get_secret_value(self, secret_name):
-        get_secret_request = GetSecretValueRequest()
-        get_secret_request.set_SecretName(secret_name)
-        get_secret_request.set_VersionStage(self.stage)
-        get_secret_request.set_FetchExtendedConfig(True)
+        get_secret_request = RpcRequest('Kms', '2016-01-20', 'GetSecretValue', 'kms')
+        get_secret_request._protocol_type = "https"
+        get_secret_request.add_query_param('SecretName', secret_name)
+        get_secret_request.add_query_param('VersionStage', self.stage)
+        get_secret_request.add_query_param('FetchExtendedConfig', True)
+        get_secret_request.set_accept_format("JSON")
         try:
             get_secret_resp = self.secret_client.get_secret_value(get_secret_request)
             resp_json = json.loads(get_secret_resp.decode(encoding="utf-8"))
@@ -129,6 +133,7 @@ class SecretManagerCacheClient:
                         raise e
                 except ClientException:
                     get_logger().error("action:recovery_get_secret", exc_info=True)
+                    raise e
             else:
                 raise e
         return convert_json_to_secret_info(resp_json)

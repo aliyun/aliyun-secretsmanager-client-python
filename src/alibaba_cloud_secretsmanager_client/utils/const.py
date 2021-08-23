@@ -49,3 +49,9 @@ DEFAULT_LOGGER_NAME = "CacheClient"
 USER_AGENT_OF_SECRETS_MANAGER_PYTHON = "alibabacloud-secretsmanager-python"
 # 版本号
 PROJECT_VERSION = "1.0.0"
+# 默认配置文件名称
+DEFAULT_CONFIG_NAME = "secretsmanager.properties"
+# 配置文件 client_key_password_from_file_path 属性名
+PROPERTIES_CLIENT_KEY_PASSWORD_FROM_FILE_PATH_NAME = "client_key_password_from_file_path"
+# 配置文件 secret_names 属性名
+PROPERTIES_SECRET_NAMES_KEY = "secret_names"
