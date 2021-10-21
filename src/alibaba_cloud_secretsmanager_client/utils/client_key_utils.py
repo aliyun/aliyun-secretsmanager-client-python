@@ -33,14 +33,14 @@ def get_password(dict):
     password_from_env_variable = dict.get(env_const.ENV_CLIENT_KEY_PASSWORD_FROM_ENV_VARIABLE_NAME)
     password = ""
     if password_from_env_variable is not None and password_from_env_variable != "":
-        password = dict.get(password_from_env_variable)
+        password = os.getenv(password_from_env_variable)
     if password is None or password == "":
         password_file_path = dict.get(const.PROPERTIES_CLIENT_KEY_PASSWORD_FROM_FILE_PATH_NAME)
         if password_file_path is not None and password_file_path != "":
             with open(password_file_path) as f:
                 password = f.read()
     if password is None or password == "":
-        password = dict.get(env_const.ENV_CLIENT_KEY_PASSWORD_NAME_KEY)
+        password = os.getenv(env_const.ENV_CLIENT_KEY_PASSWORD_NAME_KEY)
     if password is None or password == "":
         raise ValueError("client key password is not provided")
     return password
