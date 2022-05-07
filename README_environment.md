@@ -34,7 +34,11 @@ Use Aliyun Secrets Manager client by system environment variables with the below
 	- export cache\_client\_region\_id=[{"regionId":"\<your region id>"}]
 
 * Use client key to access aliyun kms, you must set the following system environment variables (for linux):
-
+    
+    ``tips: choose one of the two client_key_password_from_env_variable and client_key_password_from_file_path,
+          When configuring client_key_password_from_env_variable, configure the password in the specified environment variable.
+          When configuring client_key_password_from_file_path, you need to configure password in the specified file.``
+          
 	- export credentials\_type=client\_key
 	- export client\_key\_password\_from\_env\_variable=\<your client key private key password from environment variable>
 	- export client\_key\_password\_from\_file\_path=\<your client key private key password from file>
