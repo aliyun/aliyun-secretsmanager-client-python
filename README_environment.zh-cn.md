@@ -35,6 +35,10 @@
 
 * 通过使用Client Key访问KMS, 你必须要设置如下系统环境变量 (linux):
 
+    ``提示:client_key_password_from_env_variable与client_key_password_from_file_path为二选一，
+          当配置client_key_password_from_env_variable时,需在指定的环境变量中配置password；
+          当配置client_key_password_from_file_path时,需在指定的文件中配置password。``
+    
 	- export credentials\_type=client\_key
 	- export client\_key\_password\_from\_env\_variable=\<your client key private key password from environment variable>
 	- export client\_key\_password\_from\_file\_path=\<your client key private key password from file>
