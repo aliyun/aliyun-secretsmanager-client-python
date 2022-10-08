@@ -18,14 +18,26 @@
 # specific language governing permissions and limitations
 # under the License
 
+from alibaba_cloud_secretsmanager_client.utils import env_const
+
 
 class RegionInfo:
 
-    def __init__(self, region_id, vpc=False, endpoint=None):
+    def __init__(self, region_id, vpc=False, endpoint=None, kms_type=env_const.KMS_TYPE):
         """"""
         self.region_id = region_id
         self.vpc = vpc
         self.endpoint = endpoint
+        self.kms_type = kms_type
 
     def __str__(self):
-        return 'region_id：%s  vpc：%s endpoint: %s' % (self.region_id, self.vpc, self.endpoint)
+        return 'region_id:%s vpc:%s endpoint:%s kms_type:%s' % (self.region_id, str(self.vpc), self.endpoint,
+                                                                str(self.kms_type))
+
+    def __hash__(self):
+        return hash(self.__str__())
+
+    def __eq__(self, other):
+        if other and isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return False

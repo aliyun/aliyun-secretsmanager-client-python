@@ -24,14 +24,16 @@ from aliyunsdkcore.acs_exception.exceptions import ClientException
 
 def judge_need_back_off(e):
     if isinstance(e, ClientException):
-        if err_code_const.REJECTED_THROTTLING == e.error_code or err_code_const.SERVICE_UNAVAILABLE_TEMPORARY == e.error_code or err_code_const.INTERNAL_FAILURE == e.error_code:
+        if (err_code_const.REJECTED_THROTTLING == e.error_code) or (
+                err_code_const.SERVICE_UNAVAILABLE_TEMPORARY == e.error_code) or (
+                err_code_const.INTERNAL_FAILURE == e.error_code):
             return True
     return False
 
 
 def judge_need_recovery_exception(e):
     if isinstance(e, ClientException):
-        if error_code.SDK_HTTP_ERROR == e.error_code or err_code_const.SDK_READ_TIMEOUT == e.error_code or err_code_const.SDK_SERVER_UNREACHABLE == e.error_code or judge_need_back_off(
-        e):
+        if (error_code.SDK_HTTP_ERROR == e.error_code) or (err_code_const.SDK_READ_TIMEOUT == e.error_code) or (
+                err_code_const.SDK_SERVER_UNREACHABLE == e.error_code) or judge_need_back_off(e):
             return True
     return False

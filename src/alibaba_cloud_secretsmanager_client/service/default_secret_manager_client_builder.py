@@ -31,6 +31,7 @@ from aliyunsdkcore.request import RpcRequest
 from alibaba_cloud_secretsmanager_client.auth.client_key_signer import ClientKeySigner
 from alibaba_cloud_secretsmanager_client.cache_client_builder import CacheClientBuilder
 from alibaba_cloud_secretsmanager_client.model.client_key_credentials import ClientKeyCredential
+from alibaba_cloud_secretsmanager_client.model.dkms_config import DKmsConfig
 from alibaba_cloud_secretsmanager_client.model.region_info import RegionInfo
 from alibaba_cloud_secretsmanager_client.service.full_jitter_back_off_strategy import FullJitterBackoffStrategy
 from alibaba_cloud_secretsmanager_client.service.secret_manager_client import SecretManagerClient
@@ -51,6 +52,8 @@ from aliyunsdkkms.request.v20160120.GetSecretValueRequest import GetSecretValueR
 from concurrent.futures import wait, ALL_COMPLETED, FIRST_COMPLETED
 from concurrent.futures.thread import ThreadPoolExecutor
 
+from alibabacloud_dkms_transfer.kms_transfer_acs_client import KmsTransferAcsClient
+
 
 class BaseSecretManagerClientBuilder(CacheClientBuilder, object):
     __metaclass__ = abc.ABCMeta
@@ -63,12 +66,13 @@ class BaseSecretManagerClientBuilder(CacheClientBuilder, object):
 
 class RegionInfoExtend:
 
-    def __init__(self, region_id, endpoint=None, vpc=False, reachable=None, escaped=None):
+    def __init__(self, region_id, endpoint=None, vpc=False, reachable=None, escaped=None, kms_type=env_const.KMS_TYPE):
         self.escaped = escaped
         self.reachable = reachable
         self.region_id = region_id
         self.vpc = vpc
         self.endpoint = endpoint
+        self.kms_type = kms_type
 
 
 def check_evn_param(param, param_name):
@@ -83,9 +87,10 @@ def sort_region_info_list(region_info_list):
         region_info_extend_list = []
         futures = []
         for region_info in region_info_list:
-            futures.append(thread_pool_executor.submit(ping_task, RegionInfoExtend(region_info.region_id,
-                                                                                   region_info.endpoint,
-                                                                                   region_info.vpc)))
+            futures.append(thread_pool_executor.submit(ping_task, RegionInfoExtend(region_id=region_info.region_id,
+                                                                                   endpoint=region_info.endpoint,
+                                                                                   vpc=region_info.vpc,
+                                                                                   kms_type=region_info.kms_type)))
         if wait(futures, return_when=ALL_COMPLETED):
             for future in futures:
                 region_info_extend_list.append(future.result())
@@ -94,8 +99,8 @@ def sort_region_info_list(region_info_list):
         region_info_list = []
         for region_info_extend in region_info_extend_list:
             region_info_list.append(
-                RegionInfo(region_info_extend.region_id,
-                           region_info_extend.vpc, region_info_extend.endpoint))
+                RegionInfo(region_info_extend.region_id, region_info_extend.vpc, region_info_extend.endpoint,
+                           region_info_extend.kms_type))
         return region_info_list
 
 
@@ -103,6 +108,7 @@ def ping_task(region_info_extend):
     endpoint = region_info_extend.endpoint
     region_id = region_info_extend.region_id
     vpc = region_info_extend.vpc
+    kms_type = region_info_extend.kms_type
     if endpoint is not None and endpoint.strip() != '':
         ping_delay = ping_host(endpoint)
     elif vpc:
@@ -110,7 +116,7 @@ def ping_task(region_info_extend):
     else:
         ping_delay = ping_host(get_endpoint(region_id))
     return RegionInfoExtend(region_id, endpoint, vpc, ping_delay >= 0,
-                            ping_delay if ping_delay >= 0 else sys.float_info.max)
+                            ping_delay if ping_delay >= 0 else sys.float_info.max, kms_type)
 
 
 class DefaultSecretManagerClientBuilder(BaseSecretManagerClientBuilder):
@@ -119,10 +125,13 @@ class DefaultSecretManagerClientBuilder(BaseSecretManagerClientBuilder):
         self.region_info_list = []
         self.credential = None
         self.back_off_strategy = None
+        self.dkms_configs_dict = {}
+        self.custom_config_file = None
 
     def build(self):
         """构建T对象，同时对T对象实例进行初始化"""
-        return self.DefaultSecretManagerClient(self.region_info_list, self.credential, self.back_off_strategy, self)
+        return self.DefaultSecretManagerClient(self.region_info_list, self.credential, self.back_off_strategy,
+                                               self.dkms_configs_dict, self.custom_config_file, self)
 
     def with_token(self, token_id, token):
         """指定token信息"""
@@ -160,9 +169,23 @@ class DefaultSecretManagerClientBuilder(BaseSecretManagerClientBuilder):
         self.back_off_strategy = back_off_strategy
         return self
 
+    def add_dkms_config(self, dkms_config):
+        """指定专属kms配置"""
+        region_info = RegionInfo(region_id=dkms_config.region_id, endpoint=dkms_config.endpoint,
+                                 kms_type=env_const.DKMS_TYPE)
+        self.dkms_configs_dict[region_info] = dkms_config
+        self.add_region_info(region_info)
+        return self
+
+    def with_custom_config_file(self, custom_config_file):
+        """指定自定义配置文件路径"""
+        self.custom_config_file = custom_config_file
+        return self
+
     class DefaultSecretManagerClient(SecretManagerClient):
 
-        def __init__(self, region_info_list, credential, back_off_strategy, builder):
+        def __init__(self, region_info_list, credential, back_off_strategy, dkms_configs_dict, custom_config_file,
+                     builder):
             self.client_dict = {}
             self.credential = credential
             self.back_off_strategy = back_off_strategy
@@ -171,10 +194,16 @@ class DefaultSecretManagerClientBuilder(BaseSecretManagerClientBuilder):
             self.region_info_list = region_info_list
             self.request_waiting_time = 10 * 60
             self.signer = None
+            self.dkms_configs_dict = dkms_configs_dict
+            self.custom_config_file = custom_config_file
 
         def init(self):
-            self.__init_properties()
-            self.__init_env()
+            self.__init_from_config_file()
+            self.__init_from_env()
+            if not self.region_info_list:
+                raise ValueError("the param[regionInfo] is needed")
+            if not self.dkms_configs_dict and not self.credential:
+                raise ValueError("the param[credentials] is needed")
             if isinstance(self.credential, ClientKeyCredential):
                 self.signer = self.credential.singer
                 self.credential = self.credential.credential
@@ -198,17 +227,12 @@ class DefaultSecretManagerClientBuilder(BaseSecretManagerClientBuilder):
                         get_logger().error("action:__get_secret_value", exc_info=True)
                         if not judge_need_recovery_exception(e):
                             raise e
-                get_secret_request = RpcRequest(get_secret_value_req._product, get_secret_value_req._version,
-                                                get_secret_value_req._action_name,
-                                                get_secret_value_req._location_service_code,
-                                                signer=get_secret_value_req._signer)
-                get_secret_request._protocol_type = get_secret_value_req._protocol_type
-                get_secret_request.add_query_param('SecretName',
-                                                   get_secret_value_req.get_query_params().get('SecretName'))
-                get_secret_request.add_query_param('VersionStage',
-                                                   get_secret_value_req.get_query_params().get('VersionStage'))
-                get_secret_request.add_query_param('FetchExtendedConfig',
-                                                   get_secret_value_req.get_query_params().get('FetchExtendedConfig'))
+                get_secret_request = GetSecretValueRequest()
+                get_secret_request.set_SecretName(get_secret_value_req.get_SecretName())
+                get_secret_request.set_VersionStage(get_secret_value_req.get_VersionStage())
+                get_secret_request.set_FetchExtendedConfig(get_secret_value_req.get_FetchExtendedConfig())
+                get_secret_request.set_accept_format(get_secret_value_req.get_accept_format())
+                get_secret_request._signer = get_secret_value_req._signer
                 future = self.pool.submit(self.__retry_get_secret_value,
                                           get_secret_request, self.region_info_list[i], finished)
                 futures.append(future)
@@ -251,33 +275,56 @@ class DefaultSecretManagerClientBuilder(BaseSecretManagerClientBuilder):
             return body
 
         def __get_client(self, region_info):
+            if self.client_dict.get(region_info) is not None:
+                return self.client_dict.get(region_info)
+            if region_info.kms_type == env_const.DKMS_TYPE:
+                self.client_dict[region_info] = self.__build_dkms_transfer_client(region_info)
+            else:
+                self.client_dict[region_info] = self.__build_kms_client(region_info)
+            return self.client_dict.get(region_info)
+
+        def __build_kms_client(self, region_info):
             region_id = region_info.region_id
-            if self.client_dict.get(region_id) is not None and self.client_dict.get(region_id) != '':
-                return self.client_dict.get(region_id)
             endpoint = region_info.endpoint
             vpc = region_info.vpc
             if endpoint is not None and endpoint.strip() != '':
                 region_provider.add_endpoint(const.PRODUCT_NAME, region_id, endpoint)
             elif vpc is not None and vpc:
-                region_provider.add_endpoint(const.PRODUCT_NAME, region_id,
-                                             get_vpc_endpoint(region_id))
+                region_provider.add_endpoint(const.PRODUCT_NAME, region_id, get_vpc_endpoint(region_id))
             client = AcsClient(credential=self.credential, region_id=region_id, verify=False)
             client.set_user_agent(get_user_agent())
-            self.client_dict[region_id] = client
-            return self.client_dict.get(region_id)
+            return client
 
-        def __init_properties(self):
-            if self.credential is None:
-                credential_properties = credentials_properties_utils.load_credentials_properties("")
-                if credential_properties is not None:
-                    self.credential = credential_properties.credential
-                    self.region_info_list = credential_properties.region_info_list
+        def __build_dkms_transfer_client(self, region_info):
+            dkms_config = self.dkms_configs_dict[region_info]
+            if dkms_config is None:
+                raise ValueError('unrecognized regionInfo')
+            config = dkms_config
+            config.region_id = region_info.region_id
+            config.endpoint = region_info.endpoint
+            credential = credentials.AccessKeyCredential(env_const.PRETEND_AK, env_const.PRETEND_SK)
+            if isinstance(dkms_config.ignore_ssl_certs, bool):
+                dkms_config.ignore_ssl_certs = not dkms_config.ignore_ssl_certs
+            client = KmsTransferAcsClient(config=config, credential=credential, verify=dkms_config.ignore_ssl_certs)
+            client.set_user_agent(get_user_agent())
+            return client
 
-        def __init_env(self):
+        def __init_from_config_file(self):
+            credential_properties = credentials_properties_utils.load_credentials_properties(self.custom_config_file)
+            if credential_properties is not None:
+                self.credential = credential_properties.credential
+                self.region_info_list.extend(credential_properties.region_info_list)
+                self.dkms_configs_dict.update(credential_properties.dkms_configs_dict)
+
+        def __init_from_env(self):
             env_dict = os.environ
-            if self.credential is None:
-                credentials_type = env_dict.get(env_const.ENV_CREDENTIALS_TYPE_KEY)
-                check_evn_param(credentials_type, env_const.ENV_CREDENTIALS_TYPE_KEY)
+            self.__init_credentials_provider_from_env(env_dict)
+            self.__init_dkms_instances_from_env(env_dict)
+            self.__init_kms_regions_from_env(env_dict)
+
+        def __init_credentials_provider_from_env(self, env_dict):
+            credentials_type = env_dict.get(env_const.ENV_CREDENTIALS_TYPE_KEY)
+            if credentials_type:
                 access_key_id = env_dict.get(env_const.ENV_CREDENTIALS_ACCESS_KEY_ID_KEY)
                 access_secret = env_dict.get(env_const.ENV_CREDENTIALS_ACCESS_SECRET_KEY)
                 if credentials_type == "ak":
@@ -306,30 +353,54 @@ class DefaultSecretManagerClientBuilder(BaseSecretManagerClientBuilder):
                 elif credentials_type == "client_key":
                     client_key_path = env_dict.get(env_const.EnvClientKeyPrivateKeyPathNameKey)
                     check_evn_param(client_key_path, env_const.EnvClientKeyPrivateKeyPathNameKey)
-                    password = client_key_utils.get_password(env_dict)
+                    password = client_key_utils.get_password(env_dict,
+                                                             env_const.ENV_CLIENT_KEY_PASSWORD_FROM_ENV_VARIABLE_NAME,
+                                                             const.PROPERTIES_CLIENT_KEY_PASSWORD_FROM_FILE_PATH_NAME)
                     credential, signer = client_key_utils.load_rsa_key_pair_credential_and_client_key_signer(
                         client_key_path, password)
                     self.credential = ClientKeyCredential(signer, credential)
                 else:
                     raise ValueError(("env param.get(%s) is illegal" % env_const.ENV_CREDENTIALS_TYPE_KEY))
-                if self.credential is not None:
-                    if len(self.region_info_list) == 0:
-                        region_json = env_dict.get(env_const.ENV_CACHE_CLIENT_REGION_ID_KEY)
-                        check_evn_param(region_json, env_const.ENV_CACHE_CLIENT_REGION_ID_KEY)
-                        try:
-                            region_dict_list = json.loads(region_json)
-                            for region_dict in region_dict_list:
-                                self.region_info_list.append(RegionInfo(
-                                    None if region_dict.get(
-                                        env_const.ENV_REGION_REGION_ID_NAME_KEY) == '' else region_dict.get(
-                                        env_const.ENV_REGION_REGION_ID_NAME_KEY),
-                                    region_dict.get(env_const.ENV_REGION_VPC_NAME_KEY),
-                                    None if region_dict.get(
-                                        env_const.ENV_REGION_ENDPOINT_NAME_KEY) == '' else region_dict.get(
-                                        env_const.ENV_REGION_ENDPOINT_NAME_KEY)))
-                        except Exception:
+
+        def __init_dkms_instances_from_env(self, env_dict):
+            config_json = env_dict.get(env_const.CACHE_CLIENT_DKMS_CONFIG_INFO_KEY)
+            if config_json:
+                try:
+                    dkms_config_maps = json.loads(config_json)
+                    for dkms_config_map in dkms_config_maps:
+                        dkms_config = DKmsConfig()
+                        dkms_config.from_map(dkms_config_map)
+                        if not all([dkms_config.region_id, dkms_config.endpoint, dkms_config.client_key_file]):
                             raise ValueError(
-                                ("env param.get(%s) is illegal" % env_const.ENV_CACHE_CLIENT_REGION_ID_KEY))
+                                "init env fail, cause of cache_client_dkms_config_info param[regionId or endpoint or "
+                                "clientKeyFile] is empty")
+                        password = client_key_utils.get_password(env_dict, dkms_config.password_from_env_variable,
+                                                                 dkms_config.password_from_file_path_name)
+                        dkms_config.password = password
+                        region_info = RegionInfo(region_id=dkms_config.region_id, endpoint=dkms_config.endpoint,
+                                                 kms_type=env_const.DKMS_TYPE)
+                        self.dkms_configs_dict[region_info] = dkms_config
+                        self.region_info_list.append(region_info)
+                except Exception:
+                    raise ValueError(("env param.get(%s) is illegal" % env_const.CACHE_CLIENT_DKMS_CONFIG_INFO_KEY))
+
+        def __init_kms_regions_from_env(self, env_dict):
+            region_json = env_dict.get(env_const.ENV_CACHE_CLIENT_REGION_ID_KEY)
+            if region_json:
+                try:
+                    region_dict_list = json.loads(region_json)
+                    for region_dict in region_dict_list:
+                        self.region_info_list.append(RegionInfo(
+                            None if not region_dict.get(
+                                env_const.ENV_REGION_REGION_ID_NAME_KEY) else region_dict.get(
+                                env_const.ENV_REGION_REGION_ID_NAME_KEY),
+                            region_dict.get(env_const.ENV_REGION_VPC_NAME_KEY),
+                            None if not region_dict.get(
+                                env_const.ENV_REGION_ENDPOINT_NAME_KEY) else region_dict.get(
+                                env_const.ENV_REGION_ENDPOINT_NAME_KEY)))
+                except Exception:
+                    raise ValueError(
+                        ("env param.get(%s) is illegal" % env_const.ENV_CACHE_CLIENT_REGION_ID_KEY))
 
         def __del__(self):
             self.close()

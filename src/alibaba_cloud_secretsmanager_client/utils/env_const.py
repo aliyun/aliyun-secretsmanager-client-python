@@ -47,3 +47,15 @@ ENV_CLIENT_KEY_PASSWORD_NAME_KEY = "client_key_password"
 EnvClientKeyPrivateKeyPathNameKey = "client_key_private_key_path"
 # 环境变量 client_key_password_from_env_variable key
 ENV_CLIENT_KEY_PASSWORD_FROM_ENV_VARIABLE_NAME = "client_key_password_from_env_variable"
+# 环境变量cache_client_dkms_config_info key
+CACHE_CLIENT_DKMS_CONFIG_INFO_KEY = "cache_client_dkms_config_info"
+# 环境变量 ignoreSSLCerts key
+ENV_IGNORE_SSL_CERTS_KEY = "ignoreSSLCerts"
+# 虚假的AKSK
+PRETEND_AK = "PRETEND_AK"
+PRETEND_SK = "PRETEND_SK"
+# KMS类型
+DKMS_TYPE = 1
+KMS_TYPE = 0
+# 环境变量dkmsConfig中 clientKeyFile key
+"clientKeyFile"

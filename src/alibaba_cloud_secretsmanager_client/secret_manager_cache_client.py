@@ -113,11 +113,10 @@ class SecretManagerCacheClient:
         return self.__refresh_now(secret_name)
 
     def __get_secret_value(self, secret_name):
-        get_secret_request = RpcRequest('Kms', '2016-01-20', 'GetSecretValue', 'kms')
-        get_secret_request._protocol_type = "https"
-        get_secret_request.add_query_param('SecretName', secret_name)
-        get_secret_request.add_query_param('VersionStage', self.stage)
-        get_secret_request.add_query_param('FetchExtendedConfig', True)
+        get_secret_request = GetSecretValueRequest()
+        get_secret_request.set_SecretName(secret_name)
+        get_secret_request.set_VersionStage(self.stage)
+        get_secret_request.set_FetchExtendedConfig(True)
         get_secret_request.set_accept_format("JSON")
         try:
             get_secret_resp = self.secret_client.get_secret_value(get_secret_request)

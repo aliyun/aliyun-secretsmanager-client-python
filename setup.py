@@ -21,6 +21,7 @@ def get_version():
     init = read("src", "alibaba_cloud_secretsmanager_client", "__init__.py")
     return VERSION_RE.search(init).group(1)
 
+
 setup(
     name="aliyun-secret-manager-client",
     packages=find_packages("src"),
@@ -33,14 +34,18 @@ setup(
     long_description=read("README.rst"),
     keywords=["aliyun", "kms", "secrets-manager"],
     install_requires=[
-                    'aliyun_python_sdk_core>=2.13.30',
-                    'aliyun_python_sdk_kms>=2.14.0',
-                    'cryptography>=3.2.1',
-                    'apscheduler>=3.5.2',
-                    'bytebuffer>=0.1.0',
-                    'pyopenssl>=16.2.0',
-                    'futures; python_version == "2.7"'
-                    ],
+        "aliyun_python_sdk_core>=2.13.30",
+        "aliyun_python_sdk_kms>=2.14.0",
+        "alibabacloud-dkms-gcs>=0.0.3; python_version>='3'",
+        "alibabacloud-dkms-gcs-python2>=0.0.5; python_version<'3'",
+        "alibabacloud-dkms-transfer-python>=0.0.3; python_version>'3'",
+        "alibabacloud-dkms-transfer-python2>=0.0.3; python_version<'3'",
+        "cryptography>=3.2.1",
+        "apscheduler>=3.5.2",
+        "bytebuffer>=0.1.0",
+        "pyopenssl>=16.2.0",
+        "futures; python_version=='2.7'"
+    ],
     include_package_data=True,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
