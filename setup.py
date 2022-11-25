@@ -44,7 +44,16 @@ setup(
         "apscheduler>=3.5.2",
         "bytebuffer>=0.1.0",
         "pyopenssl>=16.2.0",
-        "futures; python_version=='2.7'"
+        "futures; python_version=='2.7'",
+        "cryptography<=3.3.2; python_version=='2.7'",
+        "cryptography<=38.0.3; python_version>='3'",
+        "pyopenssl<=21.0.0; python_version=='2.7'",
+        "multidict<=5.1.0; python_version>='3'",
+        "apscheduler<=3.8.0",
+        "protobuf<=3.17.0; python_version<='3.6'",
+        "protobuf<=3.20.2; python_version>='3.7'",
+        "typing_extensions<= 3.10.0.2; python_version=='2.7'",
+        "typing_extensions<= 4.1.1; python_version>='3'",
     ],
     include_package_data=True,
     classifiers=[
