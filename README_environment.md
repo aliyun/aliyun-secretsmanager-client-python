@@ -45,4 +45,24 @@ Use Aliyun Secrets Manager client by system environment variables with the below
 	- export client\_key\_private\_key\_path=\<your client key private key file path>
 	- export cache\_client\_region\_id=[{"regionId":"\<your region id>"}]
 
-	
+* Access aliyun dedicated kms, you must set the following system environment variables (for linux):
+
+    - export cache_client_dkms_config_info=[{"ignoreSslCerts":false,"passwordFromEnvVariable":"client_key_password_from_env_variable","clientKeyFile":"\<your client key file absolute path>","regionId":"\<your dkms region>","endpoint":"\<your dkms endpoint>","caFilePath":"\<your CA certificate file absolute path>"}]
+    ```
+        The details of the configuration item named cache_client_dkms_config_info:
+        1. The configuration item named cache_client_dkms_config_info must be configured as a json array, you can configure multiple region instances
+        2. ignoreSslCerts:If ignore ssl certs (true: Ignores the ssl certificate, false: Validates the ssl certificate)
+        3. passwordFromFilePath,passwordFromFilePathName and passwordFromEnvVariable
+           passwordFromFilePath and passwordFromFilePathName:The client key password configuration is obtained from the file,choose one of the three with passwordFromEnvVariable.
+           e.g. while configuring passwordFromFilePath: < your password file absolute path >, you need to configure a file with password written under the configured absolute path
+           e.g. while configuring passwordFromFilePathName: "client_key_password_from_file_path",
+                       You need to add client_key_password_from_file_path=< your password file absolute path > in env.
+                       and correspond to a file with a password written on it.
+           e.g. while configuring passwordFromEnvVariable: "client_key_password_from_env_variable",
+                       You need to add client_key_password_from_env_variable=< your client key private key password from environment variable > in env
+                       and the corresponding env variable (xxx_env_variable=<your password>).
+        4. clientKeyFile:The absolute path to the client key json file
+        5. regionId:Region id
+        6. endpoint:Domain address of dkms
+  		7. caFilePath:The absolute path of the CA certificate of the dkms
+    ```	
