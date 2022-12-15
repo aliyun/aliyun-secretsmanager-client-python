@@ -212,7 +212,8 @@ class DefaultSecretManagerClientBuilder(BaseSecretManagerClientBuilder):
             if self.back_off_strategy is None:
                 self.back_off_strategy = FullJitterBackoffStrategy()
             self.back_off_strategy.init()
-            self.region_info_list = sort_region_info_list(self.region_info_list)
+            if len(self.region_info_list) > 1:
+                self.region_info_list = sort_region_info_list(self.region_info_list)
 
         def get_secret_value(self, get_secret_value_req):
             futures = []
@@ -374,9 +375,14 @@ class DefaultSecretManagerClientBuilder(BaseSecretManagerClientBuilder):
                             raise ValueError(
                                 "init env fail, cause of cache_client_dkms_config_info param[regionId or endpoint or "
                                 "clientKeyFile] is empty")
-                        password = client_key_utils.get_password(env_dict, dkms_config.password_from_env_variable,
-                                                                 dkms_config.password_from_file_path_name)
-                        dkms_config.password = password
+                        if dkms_config.password_from_file_path is not None \
+                                and dkms_config.password_from_file_path != "":
+                            dkms_config.password = client_key_utils.read_password_file(
+                                dkms_config.password_from_file_path)
+                        else:
+                            dkms_config.password = client_key_utils.get_password(env_dict,
+                                                                                 dkms_config.password_from_env_variable,
+                                                                                 dkms_config.password_from_file_path_name)
                         region_info = RegionInfo(region_id=dkms_config.region_id, endpoint=dkms_config.endpoint,
                                                  kms_type=env_const.DKMS_TYPE)
                         self.dkms_configs_dict[region_info] = dkms_config
