@@ -75,7 +75,7 @@ cache_client_region_id=[{"regionId":"#regionId#"}]
 
 6. 访问专属kms服务:
 ```properties
- cache_client_dkms_config_info=[{"regionId":"<your dkms region>","endpoint":"<your dkms endpoint>","passwordFromFilePath":"< your password file path >","clientKeyFile":"<your client key file path>","ignoreSslCerts":false}]
+ cache_client_dkms_config_info=[{"regionId":"<your dkms region>","endpoint":"<your dkms endpoint>","passwordFromFilePath":"< your password file path >","clientKeyFile":"<your client key file path>","ignoreSslCerts":false,"caFilePath":"<your CA certificate file path>"}]
 ```
 ```
     cache_client_dkms_config_info配置项说明:
@@ -89,5 +89,6 @@ cache_client_region_id=[{"regionId":"#regionId#"}]
        例:当配置"passwordFromEnvVariable":"your_password_env_variable"时，
          需在环境变量中添加your_password_env_variable=<你的client key对应的密码>
     5. clientKeyFile:client key json文件的路径
-    6. ignoreSslCerts:是否忽略ssl证书或配置专属kms的CA证书路径 (1.true:忽略ssl证书,2.false:验证ssl证书,3.专属kms的CA证书路径)
+    6. ignoreSslCerts:是否忽略ssl证书 (true:忽略ssl证书,false:验证ssl证书)
+    7. caFilePath:专属kms的CA证书路径
 ```
