@@ -77,7 +77,7 @@ cache_client_region_id=[{"regionId":"#regionId#"}]
 6. Access aliyun dedicated kms,you must set the following configuration variables
 
 ```properties
- cache_client_dkms_config_info=[{"regionId":"<your dkms region>","endpoint":"<your dkms endpoint>","passwordFromFilePath":"< your password file path >","clientKeyFile":"<your client key file path>","ignoreSslCerts":false}]
+ cache_client_dkms_config_info=[{"regionId":"<your dkms region>","endpoint":"<your dkms endpoint>","passwordFromFilePath":"< your password file path >","clientKeyFile":"<your client key file path>","ignoreSslCerts":false,"caFilePath":"<your CA certificate file path>"}]
 ```
 ```
     The details of the configuration item named cache_client_dkms_config_info:
@@ -91,5 +91,6 @@ cache_client_region_id=[{"regionId":"#regionId#"}]
       e.g. while configuring passwordFromEnvVariable: "your_password_env_variable",
            You need to add your_password_env_variable=< your client key private key password > in env.
     5. clientKeyFile:The path to the client key json file
-    6. ignoreSslCerts:If ignore ssl certs or config the path of the CA certificate of the dkms (1.true: Ignores the ssl certificate, 2.false: Validates the ssl certificate,3.The path of the CA certificate of the dkms)
+    6. ignoreSslCerts:If ignore ssl certs (true: Ignores the ssl certificate, false: Validates the ssl certificate)
+    7. caFilePath:The path of the CA certificate of the dkms
 ```

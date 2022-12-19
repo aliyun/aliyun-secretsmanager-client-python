@@ -24,12 +24,13 @@ from openapi.models import Config
 class DKmsConfig(Config):
 
     def __init__(self, ignore_ssl_certs=False, password_from_env_variable=None, password_from_file_path_name=None,
-                 password_from_file_path=None):
+                 password_from_file_path=None, ca_file_path=None):
         super(DKmsConfig, self).__init__()
         self.ignore_ssl_certs = ignore_ssl_certs
         self.password_from_env_variable = password_from_env_variable
         self.password_from_file_path_name = password_from_file_path_name
         self.password_from_file_path = password_from_file_path
+        self.ca_file_path = ca_file_path
 
     def from_map(self, m=None):
         super(DKmsConfig, self).from_map(m)
@@ -42,3 +43,5 @@ class DKmsConfig(Config):
                 self.password_from_file_path_name = m.get('passwordFromFilePathName')
             if m.get('passwordFromFilePath') is not None:
                 self.password_from_file_path = m.get('passwordFromFilePath')
+            if m.get('caFilePath') is not None:
+                self.ca_file_path = m.get('caFilePath')

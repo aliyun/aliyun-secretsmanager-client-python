@@ -26,7 +26,6 @@ import sys
 import time
 
 from aliyunsdkcore.auth.algorithm import sha_hmac256
-from aliyunsdkcore.request import RpcRequest
 
 from alibaba_cloud_secretsmanager_client.auth.client_key_signer import ClientKeySigner
 from alibaba_cloud_secretsmanager_client.cache_client_builder import CacheClientBuilder
@@ -304,9 +303,13 @@ class DefaultSecretManagerClientBuilder(BaseSecretManagerClientBuilder):
             config.region_id = region_info.region_id
             config.endpoint = region_info.endpoint
             credential = credentials.AccessKeyCredential(env_const.PRETEND_AK, env_const.PRETEND_SK)
+            verify = dkms_config.ignore_ssl_certs
             if isinstance(dkms_config.ignore_ssl_certs, bool):
-                dkms_config.ignore_ssl_certs = not dkms_config.ignore_ssl_certs
-            client = KmsTransferAcsClient(config=config, credential=credential, verify=dkms_config.ignore_ssl_certs)
+                verify = not dkms_config.ignore_ssl_certs
+            if (verify is None or verify is True) and dkms_config.ca_file_path is not None \
+                    and dkms_config.ca_file_path != "":
+                verify = dkms_config.ca_file_path
+            client = KmsTransferAcsClient(config=config, credential=credential, verify=verify)
             client.set_user_agent(get_user_agent())
             return client
 
