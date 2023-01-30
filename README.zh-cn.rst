@@ -65,12 +65,14 @@ Python 2.7，3.4，3.5，3.6，3.7
 
 .. code:: python
 
+   import os
+
    from alibaba_cloud_secretsmanager_client.secret_manager_cache_client_builder import SecretManagerCacheClientBuilder
    from alibaba_cloud_secretsmanager_client.service.default_secret_manager_client_builder import DefaultSecretManagerClientBuilder
 
    if __name__ == '__main__':
        secret_cache_client = SecretManagerCacheClientBuilder.new_cache_client_builder(DefaultSecretManagerClientBuilder.standard() \
-           .with_access_key("#accessKeyId#", "#accessKeySecret#") \
+           .with_access_key(os.getenv("#accessKeyId#"), os.getenv("#accessKeySecret#")) \
            .with_region("#regionId#").build()) \
        .build();
        secret_info = secret_cache_client.get_secret_info("#secretName#")
@@ -83,6 +85,8 @@ Python 2.7，3.4，3.5，3.6，3.7
 
 .. code:: python
 
+   import os
+
    from alibaba_cloud_secretsmanager_client.secret_manager_cache_client_builder import SecretManagerCacheClientBuilder
    from alibaba_cloud_secretsmanager_client.cache.file_cache_secret_store_strategy import FileCacheSecretStoreStrategy
    from alibaba_cloud_secretsmanager_client.service.default_secret_manager_client_builder import DefaultSecretManagerClientBuilder
@@ -91,7 +95,7 @@ Python 2.7，3.4，3.5，3.6，3.7
 
    if __name__ == '__main__':
        secret_cache_client = SecretManagerCacheClientBuilder \
-       .new_cache_client_builder(DefaultSecretManagerClientBuilder.standard().with_access_key("#accessKeyId#", "#accessKeySecret#") \
+       .new_cache_client_builder(DefaultSecretManagerClientBuilder.standard().with_access_key(os.getenv("#accessKeyId#"), os.getenv("#accessKeySecret#")) \
             .with_back_off_strategy(FullJitterBackoffStrategy(3, 2000, 10000)) \
             .with_region("#regionId#").build()) \
         .with_cache_secret_strategy(FileCacheSecretStoreStrategy("#cacheSecretPath#", True,"#salt#")) \
