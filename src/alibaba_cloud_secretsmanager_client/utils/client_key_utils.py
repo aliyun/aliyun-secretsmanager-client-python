@@ -47,4 +47,4 @@ def get_password(config_dict, env_variable_name, file_path_name):
 
 def read_password_file(password_file_path):
     with open(password_file_path) as f:
-        return f.read()
+        return f.read().strip().replace('\n', '').replace('\r', '')

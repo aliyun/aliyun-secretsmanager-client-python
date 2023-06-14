@@ -25,7 +25,7 @@ class Properties(object):
                 return None
             pro_file = open(self.file_name, 'Ur')
             for line in pro_file.readlines():
-                line = line.strip().replace('\n', '')
+                line = line.strip().replace('\n', '').replace('\r', '')
                 if line.find("#") != -1:
                     line = line[0:line.find('#')]
                 if line.find('=') > 0:
