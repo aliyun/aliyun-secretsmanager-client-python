@@ -36,10 +36,10 @@ setup(
     install_requires=[
         "aliyun_python_sdk_core>=2.13.30",
         "aliyun_python_sdk_kms>=2.14.0",
-        "alibabacloud-dkms-gcs==1.0.1; python_version>='3'",
-        "alibabacloud-dkms-gcs-python2==1.0.2; python_version<'3'",
-        "alibabacloud-dkms-transfer-python==0.1.1; python_version>'3'",
-        "alibabacloud-dkms-transfer-python2==0.1.1; python_version<'3'",
+        "alibabacloud-dkms-gcs==1.0.2; python_version>='3'",
+        "alibabacloud-dkms-gcs-python2==1.0.3; python_version<'3'",
+        "alibabacloud-dkms-transfer-python==0.1.2; python_version>'3'",
+        "alibabacloud-dkms-transfer-python2==0.1.2; python_version<'3'",
         "cryptography>=3.2.1",
         "apscheduler>=3.5.2",
         "bytebuffer>=0.1.0",
@@ -66,6 +66,8 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: Implementation :: CPython",
         "Topic :: Security"
     ],
