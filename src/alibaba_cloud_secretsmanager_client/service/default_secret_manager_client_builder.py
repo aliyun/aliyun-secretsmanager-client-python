@@ -302,6 +302,7 @@ class DefaultSecretManagerClientBuilder(BaseSecretManagerClientBuilder):
             config = dkms_config
             config.region_id = region_info.region_id
             config.endpoint = region_info.endpoint
+            config.user_agent = get_user_agent()
             credential = credentials.AccessKeyCredential(env_const.PRETEND_AK, env_const.PRETEND_SK)
             verify = dkms_config.ignore_ssl_certs
             if isinstance(dkms_config.ignore_ssl_certs, bool):
@@ -310,7 +311,6 @@ class DefaultSecretManagerClientBuilder(BaseSecretManagerClientBuilder):
                     and dkms_config.ca_file_path != "":
                 verify = dkms_config.ca_file_path
             client = KmsTransferAcsClient(config=config, credential=credential, verify=verify)
-            client.set_user_agent(get_user_agent())
             return client
 
         def __init_from_config_file(self):
