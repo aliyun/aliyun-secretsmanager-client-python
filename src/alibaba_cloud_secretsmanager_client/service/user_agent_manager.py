@@ -27,9 +27,9 @@ def get_user_agent():
 
 
 def register_user_agent(user_agent, priority):
-    if priority > UserAgentManager.priority:
+    if priority >= UserAgentManager.priority:
         with UserAgentManager.lock:
-            if priority > UserAgentManager.priority:
+            if priority >= UserAgentManager.priority:
                 UserAgentManager.user_agent = user_agent
                 UserAgentManager.priority = priority
 
