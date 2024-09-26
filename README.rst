@@ -55,8 +55,10 @@ Sample Code
 Ordinary User Sample Code
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
--  Build Secrets Manager Client by system environment variables (`system
-   environment variables setting for details <README_environment.md>`__)
+-  Build Secrets Manager Client by system environment variables or
+   configuration file (secretsmanager.properties) (`system environment
+   variables setting for details <README_environment.md>`__,\ `configure
+   configuration details <README_config.md>`__)
 
 .. code:: python
 
