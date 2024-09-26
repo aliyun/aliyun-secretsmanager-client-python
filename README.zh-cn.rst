@@ -50,7 +50,7 @@ Python 2.7，3.4，3.5，3.6，3.7，3.8，3.9
 一般用户代码
 ~~~~~~~~~~~~
 
--  通过系统环境变量构建客户端(`系统环境变量设置详情 <README_environment.zh-cn.md>`__)
+-  通过系统环境变量或配置文件(secretsmanager.properties)构建客户端(`系统环境变量设置详情 <README_environment.zh-cn.md>`__\ 、\ `配置文件设置详情 <README_config.zh-cn.md>`__)
 
 .. code:: python
 
