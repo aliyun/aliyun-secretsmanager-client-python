@@ -39,6 +39,8 @@ def get_password(config_dict, env_variable_name, file_path_name):
         if password_file_path is not None and password_file_path != "":
             password = read_password_file(password_file_path)
     if password is None or password == "":
+        password = os.getenv(env_variable_name)
+    if password is None or password == "":
         password = os.getenv(env_const.ENV_CLIENT_KEY_PASSWORD_NAME_KEY)
     if password is None or password == "":
         raise ValueError("client key password is not provided")

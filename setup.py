@@ -49,7 +49,7 @@ setup(
         "cryptography<=38.0.3; python_version>='3'",
         "pyopenssl<=21.0.0; python_version=='2.7'",
         "multidict<=5.1.0; python_version>='3'",
-        "apscheduler<=3.8.0",
+        "apscheduler<=3.8.0; python_version=='2.7'",
         "protobuf<=3.17.0; python_version<='3.6'",
         "protobuf<=3.20.2; python_version>='3.7'",
         "typing_extensions<= 3.10.0.2; python_version=='2.7'",

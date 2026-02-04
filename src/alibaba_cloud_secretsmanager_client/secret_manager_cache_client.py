@@ -85,8 +85,8 @@ class SecretManagerCacheClient:
                     return self.cache_hook.get(cache_secret_info)
                 secret_info = self.__get_secret_value(secret_name)
                 self.store_and_refresh(secret_name, secret_info)
-                return self.cache_hook.put(secret_info).secret_info if self.cache_hook.put(
-                    secret_info) is not None else None
+                cache_secret_info = self.cache_hook.put(secret_info)
+                return cache_secret_info.secret_info if cache_secret_info is not None else None
 
     def get_secret_value(self, secret_name):
         """根据凭据名称获取凭据存储值文本信息"""
@@ -164,7 +164,7 @@ class SecretManagerCacheClient:
         cache_secret_info = self.cache_hook.put(secret_info)
         if cache_secret_info is not None:
             self.cache_secret_store_strategy.store_secret(cache_secret_info)
-        get_logger().info("secret_name:%s refresh success", secret_name)
+        get_logger().info("secret_name:%s refresh success current versionId:%s", secret_name, secret_info.version_id)
 
     def __remove_refresh_task(self, secret_name):
         if self.sched.get_job(job_id=secret_name) is not None:
