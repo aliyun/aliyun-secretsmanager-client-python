@@ -41,7 +41,7 @@ example):
 
 .. code:: bash
 
-   $ pip install aliyun-secret-manager-client
+   $ pip install aliyun_secret_manager_client
 
 You can also install the unzipped installer package directly:
 

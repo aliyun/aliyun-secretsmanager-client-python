@@ -23,7 +23,7 @@ def get_version():
 
 
 setup(
-    name="aliyun-secret-manager-client",
+    name="aliyun_secret_manager_client",
     packages=find_packages("src"),
     package_dir={"": "src"},
     version=get_version(),
