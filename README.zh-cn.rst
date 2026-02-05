@@ -36,7 +36,7 @@ Python 2.7，3.4，3.5，3.6，3.7，3.8，3.9
 
 .. code:: bash
 
-   $ pip install aliyun-secret-manager-client
+   $ pip install aliyun_secret_manager_client
 
 也可以直接安装解压后的安装包：
 
